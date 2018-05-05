@@ -12,36 +12,21 @@ public class Consumer {
     public static void main(String[] args) {
         System.out.println("Jms In Action");
 
-        ConnectionFactory connectionFactory;
-        Connection connection = null;
+        ConnectionFactory connectionFactory = null;
+        Queue queue = null;
 
         try {
             InitialContext initialContext = new InitialContext();
-            Queue queue = (Queue) initialContext.lookup("jms/P2PQueue");
+            queue = (Queue) initialContext.lookup("jms/P2PQueue");
             connectionFactory = (ConnectionFactory) initialContext.lookup("jms/__defaultConnectionFactory");
-
-            connection =connectionFactory.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            connection.start();
-
-            MessageConsumer messageConsumer = session.createConsumer(queue);
-            TextMessage textMessage = (TextMessage) messageConsumer.receive();
-
-            String body = textMessage.getText();
-            System.out.printf(body);
-
         } catch (NamingException e) {
             e.printStackTrace();
-        } catch (JMSException e) {
-            e.printStackTrace();
-        } finally {
-            if (connection != null){
-                try {
-                    connection.close();
-                } catch (JMSException e) {
-                    e.printStackTrace();
-                }
-            }
+        }
+
+        try (JMSContext context = connectionFactory.createContext()) {
+            JMSConsumer consumer = context.createConsumer(queue);
+            String body = consumer.receiveBody(String.class);
+            System.out.println(body);
         }
     }
 }

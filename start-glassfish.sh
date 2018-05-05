@@ -1,0 +1,1 @@
+./bin/asadmin start-domain --verbose./bin/asadmin start-domain --verbose
